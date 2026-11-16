@@ -46,40 +46,28 @@
     (document.head || root).appendChild(wide);
   }
 
-  /* ---- zászlók: Windowson a böngésző nem rajzol zászló-emojit (csak „HU” betűket) → képpel helyettesítjük ---- */
-  function flagEmojiOk() {
-    try {
-      var c = document.createElement("canvas"); c.width = c.height = 32;
-      var x = c.getContext("2d"); x.textBaseline = "top"; x.font = "28px sans-serif";
-      x.fillText("🇭🇺", 0, 0); // 🇭🇺
-      var d = x.getImageData(0, 0, 32, 32).data;
-      for (var i = 0; i < d.length; i += 4) {
-        if (d[i + 3] > 100 && (Math.abs(d[i] - d[i + 1]) > 40 || Math.abs(d[i + 1] - d[i + 2]) > 40)) return true; // színes képpont = valódi zászló
-      }
-      return false;
-    } catch (e) { return true; }
-  }
-  var FLAG_CDN = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/";
-  function emojiFile(s) {
-    var out = [];
-    for (var i = 0; i < s.length; i++) {
-      var cp = s.codePointAt(i); if (cp > 0xffff) i++;
-      if (cp !== 0xfe0f) out.push(cp.toString(16));
-    }
-    return out.join("-");
-  }
+  /* ---- zászlók: valódi (téglalap alakú) zászlóképek minden gépen, az emoji helyett ----
+   * A Windows nem rajzol zászló-emojit, telefonon pedig rajzos az emoji. A képek a flags/ mappában vannak
+   * (flag-icons, MIT licenc), az első betöltés után offline is megmaradnak. */
   function patchFlags() {
     if (typeof window.flag !== "function" || window.flag.__bpImg) return;
     var orig = window.flag;
     var img = function (cc) {
-      var e = orig(cc);
-      return "<img class='bpFlag' src='" + FLAG_CDN + emojiFile(e) + ".svg' alt='" + e + "' draggable='false'>";
+      var k = String(cc || "XX").toUpperCase();
+      var known = /^[A-Z]{2}(-[A-Z]{3})?$/.test(k) && k !== "XX";
+      if (k === "GB-NIR") k = "GB"; // Észak-Írországnak nincs hivatalos saját zászlója: az Egyesült Királyságé
+      return "<img class='bpFlag' src='flags/" + (known ? k.toLowerCase() : "xx") + ".svg' alt='" + orig(cc) +
+        "' draggable='false' onerror=\"this.onerror=null;this.src='flags/xx.svg'\">";
     };
     img.__bpImg = true;
     window.flag = img;
     var fs = document.createElement("style");
-    fs.textContent = ".bpFlag{height:1.15em;width:auto;vertical-align:-0.22em;display:inline-block}" +
-      ".cty .flag .bpFlag{height:1em;vertical-align:top}";
+    fs.textContent =
+      ".bpFlag{height:.95em;width:auto;aspect-ratio:4/3;vertical-align:-0.08em;display:inline-block;border-radius:3px;" +
+      "box-shadow:0 0 0 1px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.18);object-fit:cover;}" +
+      ".cty .flag{filter:none!important;}" +
+      ".cty .flag .bpFlag{height:30px;border-radius:5px;vertical-align:top;box-shadow:0 0 0 1px rgba(0,0,0,.10),0 2px 5px rgba(0,0,0,.22);}" +
+      ".tile.flagT .bpFlag{height:22px;border-radius:3px;}";
     (document.head || root).appendChild(fs);
   }
 
@@ -140,7 +128,7 @@
     if (PAGE === "login") { if (window.bpAuthInit) window.bpAuthInit(get("bpAuth")); return; }
     var m = /[#&]s=([^&]*)/.exec(location.hash || "");
     var startVal = m ? decodeURIComponent(m[1]) : get("bpLastStart");
-    if (window.__bpForceFlagImg || !flagEmojiOk()) patchFlags();
+    patchFlags();
     try { if (window.bpInit) window.bpInit(startVal, ""); } catch (e) {}
     requestAnimationFrame(function () { requestAnimationFrame(bootOff); });
   }
