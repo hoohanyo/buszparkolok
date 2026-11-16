@@ -18,32 +18,21 @@
     root.classList.add("bp-boot-out");
     setTimeout(function () { root.classList.remove("bp-boot", "bp-boot-out"); }, 260);
   }
+  var dark = false; try { dark = localStorage.getItem("bpTema") === "sotet"; } catch (e) {}
   if (PAGE === "park") {
     root.classList.add("bp-boot");
     var st = document.createElement("style");
     st.textContent =
-      "html.bp-boot{background:#14121C!important}" +
+      "html.bp-boot{background:" + (dark ? "#0A0F1C" : "#0F2557") + "!important}" +
       "html.bp-boot body{visibility:hidden}" +
-      "html.bp-boot::before,html.bp-boot::after{position:fixed;left:0;right:0;z-index:2147483647;pointer-events:none;transition:opacity .22s ease}" +
-      "html.bp-boot::before{content:'';top:0;bottom:0;background:#14121C url(bp_icon.png) no-repeat center calc(50% - 22px)/104px 104px}" +
-      "html.bp-boot::after{content:'Buszparkolók';top:calc(50% + 44px);text-align:center;color:#F4F1EA;font:900 18px Roboto,Arial,sans-serif}" +
+      "html.bp-boot::before,html.bp-boot::after{position:fixed;left:0;right:0;z-index:2147483647;pointer-events:none;transition:opacity .25s ease}" +
+      "html.bp-boot::before{content:'';top:0;bottom:0;background:url(bp_icon.png) no-repeat center calc(50% - 22px)/96px 96px," +
+      (dark ? "linear-gradient(135deg,#0B1530,#14306E 60%,#2456C4)" : "linear-gradient(135deg,#0F2557,#1B4DB1 60%,#2F74F5)") + ";animation:bpBootB 2.2s ease-in-out infinite}" +
+      "html.bp-boot::after{content:'Buszparkolók';top:calc(50% + 42px);text-align:center;color:#fff;font:800 18px 'Plus Jakarta Sans',Inter,system-ui,sans-serif;letter-spacing:-.2px}" +
+      "@keyframes bpBootB{0%,100%{background-size:96px 96px,auto}50%{background-size:102px 102px,auto}}" +
       "html.bp-boot-out::before,html.bp-boot-out::after{opacity:0}";
     (document.head || root).appendChild(st);
     setTimeout(bootOff, 5000); // biztonsági háló
-  }
-
-  /* ---- számítógépen: országok és helyek 3 oszlopban ---- */
-  if (PAGE === "park") {
-    var wide = document.createElement("style");
-    wide.textContent =
-      "@media (min-width:900px){" +
-      ".grid{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1240px;margin:0 auto;}" +
-      ".list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:12px;align-items:stretch;max-width:1240px;margin:0 auto;}" +
-      ".list>*{grid-column:1/-1;}" +
-      ".list>.row{grid-column:auto;margin-bottom:11px;height:calc(100% - 11px);}" +
-      "#stat,#chips,.mine{max-width:1240px;margin-left:auto;margin-right:auto;}" +
-      "}";
-    (document.head || root).appendChild(wide);
   }
 
   /* ---- zászlók: valódi (téglalap alakú) zászlóképek minden gépen, az emoji helyett ----
@@ -105,6 +94,7 @@
       return;
     }
     if (s.indexOf("PCACHE:") === 0) return; // a lista oldal maga is elmenti (bpCache)
+    if (s.indexOf("THEME:") === 0) return;  // a böngészőben a theme-color meta már átállt
     if (s.indexOf("NAV:") === 0) { openExternal(s.substring(4)); return; }
     if (s === "PBACK") { locStop(); leaving = true; location.replace("index.html"); return; }
     if (s === "LOCATE") { locStart(); return; }
@@ -122,6 +112,10 @@
       if (window.bpBack) window.bpBack(); else { leaving = true; location.replace("index.html"); }
     });
   }
+
+  // a fejléc színe a böngésző sávjában (Android Chrome) a témához igazodik
+  function metaColor() { var m = document.querySelector("meta[name=theme-color]"); if (m && PAGE === "park") m.setAttribute("content", dark ? "#0B1530" : "#0F2557"); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", metaColor); else metaColor();
 
   /* ---- indítás: amit a Niotron PageLoaded blokkja csinált ---- */
   function start() {
