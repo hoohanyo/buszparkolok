@@ -23,11 +23,11 @@
     root.classList.add("bp-boot");
     var st = document.createElement("style");
     st.textContent =
-      "html.bp-boot{background:" + (dark ? "#0A0F1C" : "#0F2557") + "!important}" +
+      "html.bp-boot{background:" + (dark ? "#170B20" : "#2A1638") + "!important}" +
       "html.bp-boot body{visibility:hidden}" +
       "html.bp-boot::before,html.bp-boot::after{position:fixed;left:0;right:0;z-index:2147483647;pointer-events:none;transition:opacity .25s ease}" +
       "html.bp-boot::before{content:'';top:0;bottom:0;background:url(bp_icon.png) no-repeat center calc(50% - 22px)/96px 96px," +
-      (dark ? "linear-gradient(135deg,#0B1530,#14306E 60%,#2456C4)" : "linear-gradient(135deg,#0F2557,#1B4DB1 60%,#2F74F5)") + ";animation:bpBootB 2.2s ease-in-out infinite}" +
+      (dark ? "linear-gradient(135deg,#170B20,#3F173A 50%,#8A2C49 85%,#B4523A)" : "linear-gradient(135deg,#2A1638,#5E2352 50%,#C2415A 85%,#E5704A)") + ";animation:bpBootB 2.2s ease-in-out infinite}" +
       "html.bp-boot::after{content:'Buszparkolók';top:calc(50% + 42px);text-align:center;color:#fff;font:800 18px 'Plus Jakarta Sans',Inter,system-ui,sans-serif;letter-spacing:-.2px}" +
       "@keyframes bpBootB{0%,100%{background-size:96px 96px,auto}50%{background-size:102px 102px,auto}}" +
       "html.bp-boot-out::before,html.bp-boot-out::after{opacity:0}";
@@ -114,7 +114,7 @@
   }
 
   // a fejléc színe a böngésző sávjában (Android Chrome) a témához igazodik
-  function metaColor() { var m = document.querySelector("meta[name=theme-color]"); if (m && PAGE === "park") m.setAttribute("content", dark ? "#0B1530" : "#0F2557"); }
+  function metaColor() { var m = document.querySelector("meta[name=theme-color]"); if (m && PAGE === "park") m.setAttribute("content", dark ? "#170B20" : "#2A1638"); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", metaColor); else metaColor();
 
   /* ---- indítás: amit a Niotron PageLoaded blokkja csinált ---- */
