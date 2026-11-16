@@ -32,6 +32,57 @@
     setTimeout(bootOff, 5000); // biztonsági háló
   }
 
+  /* ---- számítógépen: országok és helyek 3 oszlopban ---- */
+  if (PAGE === "park") {
+    var wide = document.createElement("style");
+    wide.textContent =
+      "@media (min-width:900px){" +
+      ".grid{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1240px;margin:0 auto;}" +
+      ".list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:12px;align-items:stretch;max-width:1240px;margin:0 auto;}" +
+      ".list>*{grid-column:1/-1;}" +
+      ".list>.row{grid-column:auto;margin-bottom:11px;height:calc(100% - 11px);}" +
+      "#stat,#chips,.mine{max-width:1240px;margin-left:auto;margin-right:auto;}" +
+      "}";
+    (document.head || root).appendChild(wide);
+  }
+
+  /* ---- zászlók: Windowson a böngésző nem rajzol zászló-emojit (csak „HU” betűket) → képpel helyettesítjük ---- */
+  function flagEmojiOk() {
+    try {
+      var c = document.createElement("canvas"); c.width = c.height = 32;
+      var x = c.getContext("2d"); x.textBaseline = "top"; x.font = "28px sans-serif";
+      x.fillText("🇭🇺", 0, 0); // 🇭🇺
+      var d = x.getImageData(0, 0, 32, 32).data;
+      for (var i = 0; i < d.length; i += 4) {
+        if (d[i + 3] > 100 && (Math.abs(d[i] - d[i + 1]) > 40 || Math.abs(d[i + 1] - d[i + 2]) > 40)) return true; // színes képpont = valódi zászló
+      }
+      return false;
+    } catch (e) { return true; }
+  }
+  var FLAG_CDN = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/";
+  function emojiFile(s) {
+    var out = [];
+    for (var i = 0; i < s.length; i++) {
+      var cp = s.codePointAt(i); if (cp > 0xffff) i++;
+      if (cp !== 0xfe0f) out.push(cp.toString(16));
+    }
+    return out.join("-");
+  }
+  function patchFlags() {
+    if (typeof window.flag !== "function" || window.flag.__bpImg) return;
+    var orig = window.flag;
+    var img = function (cc) {
+      var e = orig(cc);
+      return "<img class='bpFlag' src='" + FLAG_CDN + emojiFile(e) + ".svg' alt='" + e + "' draggable='false'>";
+    };
+    img.__bpImg = true;
+    window.flag = img;
+    var fs = document.createElement("style");
+    fs.textContent = ".bpFlag{height:1.15em;width:auto;vertical-align:-0.22em;display:inline-block}" +
+      ".cty .flag .bpFlag{height:1em;vertical-align:top}";
+    (document.head || root).appendChild(fs);
+  }
+
   /* ---- helymeghatározás ---- */
   var watchId = null;
   function locStop() { if (watchId !== null) { try { navigator.geolocation.clearWatch(watchId); } catch (e) {} watchId = null; } }
@@ -89,6 +140,7 @@
     if (PAGE === "login") { if (window.bpAuthInit) window.bpAuthInit(get("bpAuth")); return; }
     var m = /[#&]s=([^&]*)/.exec(location.hash || "");
     var startVal = m ? decodeURIComponent(m[1]) : get("bpLastStart");
+    if (window.__bpForceFlagImg || !flagEmojiOk()) patchFlags();
     try { if (window.bpInit) window.bpInit(startVal, ""); } catch (e) {}
     requestAnimationFrame(function () { requestAnimationFrame(bootOff); });
   }
