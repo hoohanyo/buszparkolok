@@ -1,5 +1,5 @@
 /* Buszparkolók – service worker: az app offline is elindul; frissítéskor mindig a hálózatról jön az új változat. */
-var CACHE = "bp-1.3.0";
+var CACHE = "bp-1.3.1";
 var SHELL = ["./", "index.html", "parkolok.html", "web-bridge.js", "bus.jpeg", "bp_icon.png", "icon-192.png", "icon-512.png", "manifest.webmanifest"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
